@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { getZones, countByRestriction, getColor, type Restriction, getLastUpdated } from '@/utils/zones'
 
 const props = defineProps<{
@@ -12,6 +13,27 @@ const emit = defineEmits<{
 const zones = getZones()
 const counts = countByRestriction(zones)
 const lastUpdated = getLastUpdated()
+
+const status = ref<{ lastChecked: string | null; lastUpdated: string | null; source: string | null }>({
+  lastChecked: null,
+  lastUpdated: null,
+  source: null,
+})
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/api/status')
+    status.value = await res.json()
+  } catch {
+    // API not available (dev mode)
+  }
+})
+
+function formatDate(iso: string | null): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return d.toLocaleString('bg-BG', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
 
 function toggle(restriction: Restriction) {
   emit('toggle', restriction)
@@ -52,8 +74,9 @@ function isVisible(restriction: Restriction): boolean {
     <div class="instructions">
       <p>💡 Кликнете върху зона за подробности</p>
     </div>
-    <div class="instructions">
-        <p>Последно обновено: {{ lastUpdated }}</p>
+    <div class="status">
+      <p><strong>Последна проверка:</strong> {{ formatDate(status.lastChecked) }}</p>
+      <p><strong>Данни от:</strong> {{ lastUpdated || '—' }}</p>
     </div>
   </div>
 </template>
@@ -138,6 +161,18 @@ h2 {
   margin: 0;
   font-size: 12px;
   color: #888;
+}
+
+.status {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.status p {
+  margin: 4px 0;
+  font-size: 11px;
+  color: #666;
 }
 
 @media (max-width: 600px) {

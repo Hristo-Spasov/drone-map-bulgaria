@@ -52,13 +52,22 @@ const RESTRICTION_COLORS: Record<Restriction, { fill: string; border: string }> 
 }
 
 export function getZones(): Zone[] {
-  return (zonesData as ZonesFile).features
+  try {
+    return (zonesData as ZonesFile).features
+  } catch (e) {
+    console.error('Failed to load zones:', e)
+    return []
+  }
 }
-
 export function getLastUpdated(): string {
+  try{
   const rawTitle = zonesData.title
   const dateMatch = rawTitle.match(/\d{2}\-\d{2}\-\d{4}/)
-  return dateMatch ? dateMatch[0] : ''
+  return dateMatch ? dateMatch[0] : ''}
+  catch(e){
+    console.error('Failed to get last updated date:', e)
+    return ''
+  }
 
 }
 
@@ -73,7 +82,14 @@ export function createZoneCircles(
 ): L.LayerGroup {
   const group = L.layerGroup()
 
-  for (const zone of zones) {
+  // Sort so PROHIBITED zones render on top (drawn last = on top)
+  const sorted = [...zones].sort((a, b) => {
+    if (a.restriction === 'PROHIBITED' && b.restriction !== 'PROHIBITED') return 1
+    if (a.restriction !== 'PROHIBITED' && b.restriction === 'PROHIBITED') return -1
+    return 0
+  })
+
+  for (const zone of sorted) {
     if (!visibleRestrictions.has(zone.restriction)) continue
 
     for (const geom of zone.geometry) {

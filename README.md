@@ -1,42 +1,82 @@
-# drone-zones-bulgaria
+# 🚁 Drone Zones Bulgaria
 
-This template should help get you started developing with Vue 3 in Vite.
+Интерактивна карта на зоните за полети на БЛС (дронове) в България.
 
-## Recommended IDE Setup
+Показва всички забранени зони и зони, изискващи разрешение, на базата на данни от Главна дирекция "Гражданска въздухоплавателна администрация" (ГД ГВА).
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 📸 Функции
 
-## Recommended Browser Setup
+- 🗺️ **Интерактивна карта** — пълно мащабиране и преместване на картата на България
+- 🔴 **Забранени зони** — червени кръгове и полигони (полетите са напълно забранени)
+- 🟠 **Зони с изискване за разрешение** — оранжеви зони (полети само с предварително разрешение от ГД ГВА)
+- 📋 **Информация при клик** — подробности за зоната: име, причина, височина, контакт на органа
+- ⚙️ **Филтри** — включване/изключване на типове зони чрез страничния панел
+- 🔄 **Автоматично обновяване** — сървърът автоматично изтегля най-новите данни от сайта на ГД ГВА
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
 
-## Type Support for `.vue` Imports in TS
+## 🚀 Стартиране
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### Локална разработка
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
+# Инсталиране на зависимости
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# Стартиране на dev сървъра
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+Картата ще бъде достъпна на `http://localhost:5173`
 
-```sh
-npm run build
+### Продукция
+
+```bash
+# Стартиране на production сървъра
+npm start
 ```
+
+Сървърът ще:
+1. Изтегли последните данни от сайта на ГД ГВА
+2. Пусне сървъра на порт 3000
+3. Проверява за обновления на всеки 24 часа
+
+### Docker
+
+```bash
+docker build -t drone-zones-bulgaria .
+
+docker run -p 3000:3000 drone-zones-bulgaria
+```
+
+## 📁 Структура на проекта
+
+```
+drone-zones-bulgaria/
+├── index.html              # Основен HTML файл
+├── server.js               # Node.js сървър (fetch + serve)
+├── Dockerfile              # Docker конфигурация
+├── vite.config.ts          # Vite конфигурация
+├── src/
+│   ├── main.ts             # Точка на влизане
+│   ├── App.vue             # Основен компонент
+│   ├── components/
+│   │   ├── MapView.vue     # Leaflet карта със зони
+│   │   └── Sidebar.vue     # Страничен панел с филтри
+│   ├── data/
+│   │   └── zones.json      # Данни за зоните (автоматично обновяван)
+│   └── utils/
+│       └── zones.ts        # Типове, цветове, парсване на зони
+```
+
+## 📊 Данни
+
+Данните се изтеглят автоматично от сайта на ГД ГВА:
+`https://www.caa.bg/sites/default/files/upload/documents/`
+
+Форматът на ZIP файла: `bgr_zones_{ДДММГГГГ}.zip`
+
+При стартиране, сървърът опитва да намери най-новия ZIP файл и да извлече JSON данните.
+
+## 📝 Лиценз
+
+Използваните данни са публични, достъпни от сайта на ГД ГВА.

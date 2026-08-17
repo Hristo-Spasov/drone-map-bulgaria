@@ -10,7 +10,7 @@ RUN npm run build-only
 FROM node:22-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 COPY server.js .
 COPY --from=build /app/dist ./dist
 COPY src/data ./src/data
