@@ -5,7 +5,7 @@ import Sidebar from './components/Sidebar.vue'
 import type { Restriction } from './utils/zones'
 
 const visibleRestrictions = reactive<Set<Restriction>>(
-  new Set(['PROHIBITED', 'REQ_AUTHORISATION'])
+  new Set(['PROHIBITED', 'REQ_AUTHORISATION', 'CONDITIONAL'])
 )
 
 function toggleRestriction(restriction: Restriction) {

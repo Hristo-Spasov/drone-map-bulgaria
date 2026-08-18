@@ -46,11 +46,11 @@ function isVisible(restriction: Restriction): boolean {
 
 <template>
   <div class="sidebar">
-    <h2>🚁 Drone Zones BG</h2>
+    <h2>Филтър на зоните</h2>
     <p class="subtitle">{{ zones.length }} зони</p>
 
     <div class="legend">
-      <label class="legend-item" @click="toggle('PROHIBITED')">
+      <label class="legend-item" @click.prevent="toggle('PROHIBITED')">
         <input type="checkbox" :checked="isVisible('PROHIBITED')" />
         <span
           class="color-dot"
@@ -60,7 +60,7 @@ function isVisible(restriction: Restriction): boolean {
         <span class="zone-count">{{ counts.PROHIBITED }}</span>
       </label>
 
-      <label class="legend-item" @click="toggle('REQ_AUTHORISATION')">
+      <label class="legend-item" @click.prevent="toggle('REQ_AUTHORISATION')">
         <input type="checkbox" :checked="isVisible('REQ_AUTHORISATION')" />
         <span
           class="color-dot"
@@ -68,6 +68,16 @@ function isVisible(restriction: Restriction): boolean {
         ></span>
         <span class="legend-label">Изисква разрешение</span>
         <span class="zone-count">{{ counts.REQ_AUTHORISATION }}</span>
+      </label>
+
+      <label class="legend-item" @click.prevent="toggle('CONDITIONAL')">
+        <input type="checkbox" :checked="isVisible('CONDITIONAL')" />
+        <span
+          class="color-dot"
+          :style="{ backgroundColor: getColor('CONDITIONAL').fill, borderColor: getColor('CONDITIONAL').border }"
+        ></span>
+        <span class="legend-label">Условна зона</span>
+        <span class="zone-count">{{ counts.CONDITIONAL }}</span>
       </label>
     </div>
 

@@ -2,7 +2,7 @@ import L from 'leaflet'
 import 'leaflet.markercluster'
 import zonesData from '../data/zones.json'
 
-export type Restriction = 'PROHIBITED' | 'REQ_AUTHORISATION'
+export type Restriction = 'PROHIBITED' | 'REQ_AUTHORISATION' | 'CONDITIONAL'
 
 export interface ZoneGeometry {
   uomDimensions: string
@@ -49,6 +49,7 @@ export interface ZonesFile {
 const RESTRICTION_COLORS: Record<Restriction, { fill: string; border: string }> = {
   PROHIBITED: { fill: '#e74c3c', border: '#c0392b' },
   REQ_AUTHORISATION: { fill: '#f39c12', border: '#d68910' },
+  CONDITIONAL: { fill: '#3498db', border: '#2980b9' },
 }
 
 export function getZones(): Zone[] {
@@ -82,12 +83,13 @@ export function createZoneCircles(
 ): L.LayerGroup {
   const group = L.layerGroup()
 
-  // Sort so PROHIBITED zones render on top (drawn last = on top)
-  const sorted = [...zones].sort((a, b) => {
-    if (a.restriction === 'PROHIBITED' && b.restriction !== 'PROHIBITED') return 1
-    if (a.restriction !== 'PROHIBITED' && b.restriction === 'PROHIBITED') return -1
-    return 0
-  })
+  // Sort by priority: PROHIBITED > REQ_AUTHORISATION > CONDITIONAL (drawn last = on top)
+  const priority: Record<Restriction, number> = {
+    CONDITIONAL: 0,
+    REQ_AUTHORISATION: 1,
+    PROHIBITED: 2,
+  }
+  const sorted = [...zones].sort((a, b) => priority[a.restriction] - priority[b.restriction])
 
   for (const zone of sorted) {
     if (!visibleRestrictions.has(zone.restriction)) continue
@@ -130,8 +132,12 @@ export function createZoneCircles(
 
 function createPopupContent(zone: Zone, geom: ZoneGeometry): string {
   const auth = zone.zoneAuthority.find((a) => a.purpose === 'AUTHORIZATION')
-  const restrictionLabel =
-    zone.restriction === 'PROHIBITED' ? '🚫 ЗАБРАНЕНА' : '⚠️ ИЗИСКВА РАЗРЕШЕНИЕ'
+  const restrictionLabels: Record<Restriction, string> = {
+    PROHIBITED: '🚫 ЗАБРАНЕНА',
+    REQ_AUTHORISATION: '⚠️ ИЗИСКВА РАЗРЕШЕНИЕ',
+    CONDITIONAL: '🔵 УСЛОВНА',
+  }
+  const restrictionLabel = restrictionLabels[zone.restriction]
 
   return `
     <div style="font-family: Arial, sans-serif; max-width: 320px; line-height: 1.4;">
@@ -155,6 +161,7 @@ export function countByRestriction(zones: Zone[]): Record<Restriction, number> {
   const counts: Record<Restriction, number> = {
     PROHIBITED: 0,
     REQ_AUTHORISATION: 0,
+    CONDITIONAL: 0,
   }
   for (const zone of zones) {
     counts[zone.restriction]++
